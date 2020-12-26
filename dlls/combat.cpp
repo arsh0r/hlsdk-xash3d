@@ -57,12 +57,6 @@ void CGib::SpawnStickyGibs( entvars_t *pevVictim, Vector vecOrigin, int cGibs )
 {
 	int i;
 
-	if( g_Language == LANGUAGE_GERMAN )
-	{
-		// no sticky gibs in germany right now!
-		return; 
-	}
-
 	for( i = 0; i < cGibs; i++ )
 	{
 		CGib *pGib = GetClassPtr( (CGib *)NULL );
@@ -125,16 +119,8 @@ void CGib::SpawnHeadGib( entvars_t *pevVictim )
 {
 	CGib *pGib = GetClassPtr( (CGib *)NULL );
 
-	if( g_Language == LANGUAGE_GERMAN )
-	{
-		pGib->Spawn( "models/germangibs.mdl" );// throw one head
-		pGib->pev->body = 0;
-	}
-	else
-	{
-		pGib->Spawn( "models/hgibs.mdl" );// throw one head
-		pGib->pev->body = 0;
-	}
+	pGib->Spawn( "models/hgibs.mdl" );// throw one head
+	pGib->pev->body = 0;
 
 	if( pevVictim )
 	{
@@ -186,26 +172,18 @@ void CGib::SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 	{
 		CGib *pGib = GetClassPtr( (CGib *)NULL );
 
-		if( g_Language == LANGUAGE_GERMAN )
-		{
-			pGib->Spawn( "models/germangibs.mdl" );
-			pGib->pev->body = RANDOM_LONG( 0, GERMAN_GIB_COUNT - 1 );
-		}
-		else
-		{
-			if( human )
-			{
-				// human pieces
-				pGib->Spawn( "models/hgibs.mdl" );
-				pGib->pev->body = RANDOM_LONG( 1, HUMAN_GIB_COUNT - 1 );// start at one to avoid throwing random amounts of skulls (0th gib)
-			}
-			else
-			{
-				// aliens
-				pGib->Spawn( "models/agibs.mdl" );
-				pGib->pev->body = RANDOM_LONG( 0, ALIEN_GIB_COUNT - 1 );
-			}
-		}
+        if( human )
+        {
+            // human pieces
+            pGib->Spawn( "models/hgibs.mdl" );
+            pGib->pev->body = RANDOM_LONG( 1, HUMAN_GIB_COUNT - 1 );// start at one to avoid throwing random amounts of skulls (0th gib)
+        }
+        else
+        {
+            // aliens
+            pGib->Spawn( "models/agibs.mdl" );
+            pGib->pev->body = RANDOM_LONG( 0, ALIEN_GIB_COUNT - 1 );
+        }
 
 		if( pevVictim )
 		{
@@ -259,7 +237,7 @@ BOOL CBaseMonster::HasHumanGibs( void )
 		myClass == CLASS_HUMAN_PASSIVE ||
 		myClass == CLASS_PLAYER )
 
-		 return TRUE;
+		return TRUE;
 
 	return FALSE;
 }
@@ -822,6 +800,7 @@ GLOBALS ASSUMED SET:  g_iSkillLevel
 int CBaseMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
 	float	flTake;
+	bool	wasAlreadyDead;
 	Vector	vecDir;
 
 	if( !pev->takedamage )
@@ -880,8 +859,14 @@ int CBaseMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 	}
 
 	// do the damage
-	pev->health -= flTake;
-
+	wasAlreadyDead = pevAttacker->health <= 0;
+	if (IsPlayer() && pevAttacker != pev) {
+		pevAttacker->health -= flTake;
+	}
+	else if (!IsPlayer()) {
+		pev->health -= flTake;
+	}
+	
 	// HACKHACK Don't kill monsters in a script.  Let them break their scripts first
 	if( m_MonsterState == MONSTERSTATE_SCRIPT )
 	{
@@ -889,21 +874,24 @@ int CBaseMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 		return 0;
 	}
 
-	if( pev->health <= 0 )
+	// go take the damage first
+	CBaseEntity *pAttacker = CBaseEntity::Instance( pevAttacker );
+
+	if( !wasAlreadyDead && pevAttacker->health <= 0 )
 	{
 		g_pevLastInflictor = pevInflictor;
 
 		if( bitsDamageType & DMG_ALWAYSGIB )
 		{
-			Killed( pevAttacker, GIB_ALWAYS );
+			pAttacker->Killed( pev, GIB_ALWAYS );
 		}
 		else if( bitsDamageType & DMG_NEVERGIB )
 		{
-			Killed( pevAttacker, GIB_NEVER );
+			pAttacker->Killed( pev, GIB_NEVER );
 		}
 		else
 		{
-			Killed( pevAttacker, GIB_NORMAL );
+			pAttacker->Killed( pev, GIB_NORMAL );
 		}
 
 		g_pevLastInflictor = NULL;

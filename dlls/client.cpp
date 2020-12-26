@@ -166,19 +166,20 @@ void ClientKill( edict_t *pEntity )
 	entvars_t *pev = &pEntity->v;
 
 	CBasePlayer *pl = (CBasePlayer*)CBasePlayer::Instance( pev );
+	if (0) {
+		if( pl->m_fNextSuicideTime > gpGlobals->time )
+			return;  // prevent suiciding too ofter
 
-	if( pl->m_fNextSuicideTime > gpGlobals->time )
-		return;  // prevent suiciding too ofter
+		pl->m_fNextSuicideTime = gpGlobals->time + 1.0f;  // don't let them suicide for 5 seconds after suiciding
 
-	pl->m_fNextSuicideTime = gpGlobals->time + 1.0f;  // don't let them suicide for 5 seconds after suiciding
+		// have the player kill themself
+		pev->health = 0;
+		pl->Killed( pev, GIB_NEVER );
 
-	// have the player kill themself
-	pev->health = 0;
-	pl->Killed( pev, GIB_NEVER );
-
-	//pev->modelindex = g_ulModelIndexPlayer;
-	//pev->frags -= 2;		// extra penalty
-	//respawn( pev );
+		//pev->modelindex = g_ulModelIndexPlayer;
+		//pev->frags -= 2;		// extra penalty
+		//respawn( pev );
+	}
 }
 
 /*
@@ -949,7 +950,7 @@ const char *GetGameDescription()
 	if( g_pGameRules ) // this function may be called before the world has spawned, and the game rules initialized
 		return g_pGameRules->GetGameDescription();
 	else
-		return "Half-Life";
+		return "Half-Death";
 }
 
 /*

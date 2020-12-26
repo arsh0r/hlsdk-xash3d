@@ -157,14 +157,14 @@ int CHudScoreboard::Draw( float fTime )
 	if( cl_scoreboard_bg && cl_scoreboard_bg->value )
 		gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
 	if( !gHUD.m_Teamplay )
-		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Player", 255, 140, 0 );
+		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Spieler", 255, 140, 0 );
 	else
 		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Teams", 255, 140, 0 );
 
-	gHUD.DrawHudStringReverse( KILLS_RANGE_MAX + xpos_rel, ypos, 0, "kills", 255, 140, 0 );
+	gHUD.DrawHudStringReverse( KILLS_RANGE_MAX + xpos_rel, ypos, 0, "Deaths", 255, 140, 0 );
 	DrawUtfString( DIVIDER_POS + xpos_rel, ypos, ScreenWidth, "/", 255, 140, 0 );
-	DrawUtfString( DEATHS_RANGE_MIN + xpos_rel + 5, ypos, ScreenWidth, "deaths", 255, 140, 0 );
-	DrawUtfString( PING_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "latency", 255, 140, 0 );
+	DrawUtfString( DEATHS_RANGE_MIN + xpos_rel + 5, ypos, ScreenWidth, "Frags", 255, 140, 0 );
+	DrawUtfString( PING_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "Latenz", 255, 140, 0 );
 
 	if( can_show_packetloss )
 	{
@@ -291,17 +291,17 @@ int CHudScoreboard::Draw( float fTime )
 		// draw their name (left to right)
 		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, team_info->name, r, g, b );
 
-		// draw kills (right to left)
+		// draw deaths
 		xpos = KILLS_RANGE_MAX + xpos_rel;
-		gHUD.DrawHudNumberString( xpos, ypos, KILLS_RANGE_MIN + xpos_rel, team_info->frags, r, g, b );
+		gHUD.DrawHudNumberString( xpos, ypos, KILLS_RANGE_MIN + xpos_rel, team_info->deaths, r, g, b );
 
 		// draw divider
 		xpos = DIVIDER_POS + xpos_rel;
 		DrawUtfString( xpos, ypos, xpos + 20, "/", r, g, b );
 
-		// draw deaths
+		// draw kills (right to left)
 		xpos = DEATHS_RANGE_MAX + xpos_rel;
-		gHUD.DrawHudNumberString( xpos, ypos, DEATHS_RANGE_MIN + xpos_rel, team_info->deaths, r, g, b );
+		gHUD.DrawHudNumberString( xpos, ypos, DEATHS_RANGE_MIN + xpos_rel, team_info->frags, r, g, b );
 
 		// draw ping
 		// draw ping & packetloss
@@ -366,20 +366,20 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 	{
 		// Find the top ranking player
 		int highest_frags = -99999;
-		int lowest_deaths = 99999;
+		int highest_deaths = -99999;
 		int best_player = 0;
 
 		for( int i = 1; i < MAX_PLAYERS; i++ )
 		{
-			if( g_PlayerInfoList[i].name && g_PlayerExtraInfo[i].frags >= highest_frags )
+			if( g_PlayerInfoList[i].name && g_PlayerExtraInfo[i].deaths >= highest_deaths )
 			{
 				if( !( team && stricmp( g_PlayerExtraInfo[i].teamname, team ) ) )  // make sure it is the specified team
 				{
 					extra_player_info_t *pl_info = &g_PlayerExtraInfo[i];
-					if( pl_info->frags > highest_frags || pl_info->deaths < lowest_deaths )
+					if( pl_info->deaths > highest_deaths || pl_info->frags > highest_frags )
 					{
 						best_player = i;
-						lowest_deaths = pl_info->deaths;
+						highest_deaths = pl_info->deaths;
 						highest_frags = pl_info->frags;
 					}
 				}
@@ -430,17 +430,17 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 		// draw their name (left to right)
 		DrawUtfString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, pl_info->name, r, g, b );
 
-		// draw kills (right to left)
+		// draw deaths
 		xpos = KILLS_RANGE_MAX + xpos_rel;
-		gHUD.DrawHudNumberString( xpos, ypos, KILLS_RANGE_MIN + xpos_rel, g_PlayerExtraInfo[best_player].frags, r, g, b );
+		gHUD.DrawHudNumberString( xpos, ypos, KILLS_RANGE_MIN + xpos_rel, g_PlayerExtraInfo[best_player].deaths, r, g, b );
 
 		// draw divider
 		xpos = DIVIDER_POS + xpos_rel;
 		DrawUtfString( xpos, ypos, xpos + 20, "/", r, g, b );
 
-		// draw deaths
+		// draw kills (right to left)
 		xpos = DEATHS_RANGE_MAX + xpos_rel;
-		gHUD.DrawHudNumberString( xpos, ypos, DEATHS_RANGE_MIN + xpos_rel, g_PlayerExtraInfo[best_player].deaths, r, g, b );
+		gHUD.DrawHudNumberString( xpos, ypos, DEATHS_RANGE_MIN + xpos_rel, g_PlayerExtraInfo[best_player].frags, r, g, b );
 
 		// draw ping & packetloss
 		static char buf[64];

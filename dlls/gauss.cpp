@@ -233,7 +233,7 @@ void CGauss::SecondaryAttack()
 	{
 		// Moved to before the ammo burn.
 		// Because we drained 1 when m_InAttack == 0, then 1 again now before checking if we're out of ammo,
-		// this resuled in the player having -1 ammo, which in turn caused CanDeploy to think it could be deployed.
+		// this resulted in the player having -1 ammo, which in turn caused CanDeploy to think it could be deployed.
 		// This will need to be fixed further down the line by preventing negative ammo unless explicitly required (infinite ammo?),
 		// But this check will prevent the problem for now. - Solokiller
 		// TODO: investigate further.
